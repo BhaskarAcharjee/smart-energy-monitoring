@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy Monitoring System</title>
+
+    <!-- Add Chart.js for the historical data graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .data-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            width: 60%;
+        }
+
+        .current-data {
+            width: 30%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Energy Monitoring System</h1>
+
+    <div class="data-container">
+        <!-- Historical Data Graph -->
+        <div class="chart-container">
+            <h2>Historical Energy Data</h2>
+            <canvas id="historicalChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Current Energy Data -->
+        <div class="current-data">
+            <h2>Current Energy Data</h2>
+            <p>Solar: <span id="solar"></span> W</p>
+            <p>Wind: <span id="wind"></span> W</p>
+            <p>Consumption: <span id="consumption"></span> W</p>
+        </div>
+    </div>
+
+    <script>
+        // Simulated historical data
+        const historicalData = {
+            labels: ['10:00', '10:30', '11:00', '11:30', '12:00'],
+            datasets: [{
+                label: 'Solar',
+                data: [200, 250, 300, 280, 320],
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                fill: false,
+            }, {
+                label: 'Wind',
+                data: [100, 120, 150, 140, 160],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                fill: false,
+            }, {
+                label: 'Consumption',
+                data: [180, 200, 220, 210, 230],
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 2,
+                fill: false,
+            }],
+        };
+
+        // Initialize the historical data graph
+        const historicalCtx = document.getElementById('historicalChart').getContext('2d');
+        const historicalChart = new Chart(historicalCtx, {
+            type: 'line',
+            data: historicalData,
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        ticks: {
+                            stepSize: 1,
+                        },
+                    },
+                    y: {
+                        min: 0,
+                        max: 400,
+                    },
+                },
+            },
+        });
+
+        // Function to update the UI with real-time data
+        function updateUI(data) {
+            document.getElementById('solar').innerText = data.solar;
+            document.getElementById('wind').innerText = data.wind;
+            document.getElementById('consumption').innerText = data.consumption;
+
+            // Simulated real-time update for the historical graph
+            historicalData.labels.push(new Date().toLocaleTimeString().slice(0, 5));
+            historicalData.datasets[0].data.push(data.solar);
+            historicalData.datasets[1].data.push(data.wind);
+            historicalData.datasets[2].data.push(data.consumption);
+
+            // Remove the oldest data point if the length exceeds 5
+            if (historicalData.labels.length > 5) {
+                historicalData.labels.shift();
+                historicalData.datasets[0].data.shift();
+                historicalData.datasets[1].data.shift();
+                historicalData.datasets[2].data.shift();
+            }
+
+            // Update the historical graph
+            historicalChart.update();
+        }
+
+        // Example: Fetching and updating data using JavaScript
+        setInterval(() => {
+            fetch('/api/data')
+                .then(response => response.json())
+                .then(data => {
+                    // Update the UI with the new data
+                    updateUI(data);
+                });
+        }, 5000);  // Update every 5 seconds (adjust as needed)
+
+        
+    </script>
+</body>
+</html>
